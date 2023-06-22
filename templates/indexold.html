@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Image Captioning</title>
+    <style>
+        .container {
+            text-align: center;
+            margin-top: 50px;
+        }
+
+        #preview {
+            display: block;
+            margin: 0 auto;
+            max-width: 500px;
+            max-height: 500px;
+            width: auto;
+            height: auto;
+        }
+
+        #caption {
+            font-size: 18px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Image Captioning</h1>
+        <form id="uploadForm" enctype="multipart/form-data">
+            <input type="file" name="image" id="imageInput" accept=".jpg, .jpeg, .png" required>
+            <br>
+            <button type="submit">Upload</button>
+        </form>
+        <br>
+        <img id="preview" src="#" alt="Preview">
+        <h3 id="caption"></h3>
+    </div>
+
+    <script>
+        const uploadForm = document.getElementById('uploadForm');
+        const imageInput = document.getElementById('imageInput');
+        const previewImage = document.getElementById('preview');
+        const captionText = document.getElementById('caption');
+        function speakCaption(caption) {
+                    const utterance = new SpeechSynthesisUtterance(caption);
+                    utterance.onend = function() {
+                      // Do something after speaking the caption if needed
+                    };
+                    if ('speechSynthesis' in window && window.speechSynthesis.speak) {
+                      window.speechSynthesis.speak(utterance);
+                    } else {
+                      console.error('Speech synthesis is not supported in this browser.');
+                    }
+                  }
+
+        uploadForm.addEventListener('submit', (event) => {
+            event.preventDefault();
+            const formData = new FormData(uploadForm);
+
+            fetch('/', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                const caption = data.caption;
+                captionText.textContent = `Caption: ${caption}`;
+
+                speakCaption(caption)
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        });
+
+        imageInput.addEventListener('change', (event) => {
+            const file = event.target.files[0];
+            const reader = new FileReader();
+
+            reader.onload = function(e) {
+                previewImage.src = e.target.result;
+            }
+
+            reader.readAsDataURL(file);
+
+   		 previewImage.style.display = 'block';
+
+
+
+
+        });
+    </script>
+</body>
+</html>
+
+
+
+
+
+

@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Image Captioning</title>
+    <style>
+        .container {
+            text-align: center;
+            margin-top: 50px;
+        }
+
+        #preview {
+            display: block;
+            margin: 0 auto;
+            max-width: 500px;
+            max-height: 500px;
+            width: auto;
+            height: auto;
+        }
+
+        #caption {
+            font-size: 18px;
+            font-weight: bold;
+        }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/camera/1.3.4/camera.js"></script>
+</head>
+<body>
+    <div class="container">
+        <h1>Image Captioning</h1>
+        <form id="uploadForm" enctype="multipart/form-data">
+            <input type="file" name="image" id="imageInput" accept=".jpg, .jpeg, .png" required>
+            <br>
+            <button type="button" onclick="openCamera()">Camera</button>
+            <button type="submit">Upload</button>
+        </form>
+        <br>
+        <img id="preview" src="#" alt="Preview">
+        <h3 id="caption"></h3>
+    </div>
+
+    <script>
+        const uploadForm = document.getElementById('uploadForm');
+        const imageInput = document.getElementById('imageInput');
+        const previewImage = document.getElementById('preview');
+        const captionText = document.getElementById('caption');
+
+        function openCamera() {
+            Camera.getPicture({
+                quality: 70,
+                destinationType: Camera.DestinationType.DATA_URL,
+                encodingType: Camera.EncodingType.JPEG,
+                mediaType: Camera.MediaType.PICTURE,
+                sourceType: Camera.PictureSourceType.CAMERA,
+                correctOrientation: true,
+                targetWidth: 500,
+                targetHeight: 500
+            }).then(function (imageData) {
+                previewImage.src = "data:image/jpeg;base64," + imageData;
+                imageInput.value = "data:image/jpeg;base64," + imageData;
+            }).catch(function (error) {
+                console.error('Error accessing camera:', error);
+            });
+        }
+
+        uploadForm.addEventListener('submit', (event) => {
+            event.preventDefault();
+            const formData = new FormData(uploadForm);
+
+            fetch('/', {
+                method: 'POST',
+                body: formData
+            })
+                .then(response => response.json())
+                .then(data => {
+                    const caption = data.caption;
+                    captionText.textContent = `Caption: ${caption}`;
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+        });
+
+        imageInput.addEventListener('change', (event) => {
+            const file = event.target.files[0];
+            const reader = new FileReader();
+
+            reader.onload = function (e) {
+                previewImage.src = e.target.result;
+            }
+
+            reader.readAsDataURL(file);
+
+            previewImage.style.display = 'block';
+        });
+    </script>
+</body>
+</html>
